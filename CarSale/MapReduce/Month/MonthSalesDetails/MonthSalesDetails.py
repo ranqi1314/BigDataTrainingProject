@@ -34,7 +34,7 @@ class MonthSalesDetails(MRJob, ABC):
     # 将数据插入到MySQL数据库中
     def toMySQL(self):
         # 获取对数据库操作权限
-        db = pymysql.connect(host="192.168.153.1", port=3306, user="root", passwd="123456", db="xuedao", charset="utf8")
+        db = pymysql.connect(host="192.168.200.1", port=3306, user="root", passwd="123456", db="xuedao", charset="utf8")
         # 获取对表的操作权限
         cursor = db.cursor()
         sql = "insert into month_sales_details values(%s, %s, %s, %s)"

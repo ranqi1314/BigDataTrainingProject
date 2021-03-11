@@ -8,4 +8,4 @@ $HADOOP_CMD jar $STREAM_JAR_PATH \
 -input "/input/CarSales.txt" \
 -output $OUTPUT_PATH \
 -mapper "/usr/bin/python3 MonthBrandSales.py" \
--file "/root/MonthBrandSales.py"
+-file "/BigDataTrainingProject/CarSale/Month/MonthBrandSales/MonthBrandSales.py"
