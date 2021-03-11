@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>年销量</title>
+		<script src="js/echarts.min.js"></script>
+		<script src="js/jquery.js"></script>	
+		<link rel="stylesheet" href="css/screen.css" />	
+		<style type="text/css">
+			* {
+				margin: 0px;
+				padding: 0px;
+			}		
+			#mainBrand {
+				height: 400px;
+				width: 45%;
+				position: absolute;
+				left: 5%;
+				top: 100px;
+			}
+			#mainType {
+				height: 400px;
+				width: 45%;
+				position: absolute;
+				right: 5%;
+				top: 100px;
+			}		
+			.menu {
+				width: 100%;
+				height: 80px;
+				position: absolute;
+			}		
+		</style>
+	</head>
+	<body onload="main()">	
+		<div class="menu">
+			<select class="selectSizeYear">
+				<option value="2015">2015</option>
+				<option value="2016">2016</option>
+				<option value="2017">2017</option>
+				<option value="2018">2018</option>
+				<option value="2019">2019</option>
+				<option value="2020" selected="selected">2020</option>
+				<option value="2021">2021</option>
+			</select>		
+			<input class="buttonSize" type="button" value="查询" onclick="main()"/>
+		</div>
+		<div id="mainBrand"></div>
+		<div id="mainType"></div>	
+		<script>		
+			function main() {
+				getBrandData();
+				getTypeData();
+			}		
+			function getBrandData() {			
+				//获取选择时间
+				var year = $(".selectSizeYear")[0];
+				var y = year.options[year.selectedIndex].value;			
+				$.ajax({
+					type:"POST",
+					url:"YearSalesBrand",
+					data:{
+						year: y
+					},
+					success:function(data) {					
+						var brand = new Array();
+						var sales_data = new Array();					
+						var jsData = JSON.parse(data);
+						for(var i=0; i<jsData.length; i++) {
+							brand[i] = jsData[i].brand;
+							sales_data[i] = jsData[i].sales_data;
+						}					
+						testBrand(brand, sales_data);
+					}
+				});
+			}		
+			function getTypeData() {			
+				//获取选择时间
+				var year = $(".selectSizeYear")[0];
+				var y = year.options[year.selectedIndex].value;			
+				$.ajax({
+					type:"POST",
+					url:"YearSalesType",
+					data:{
+						year: y
+					},
+					success:function(data) {					
+						var car_type = new Array();
+						var sales_data = new Array();
+						
+						var jsData = JSON.parse(data);
+						for(var i=0; i<jsData.length; i++) {
+							car_type[i] = jsData[i].car_type;
+							sales_data[i] = jsData[i].sales_data;
+						}					
+						testType(car_type, sales_data);
+					}
+				});
+
+			}
+			function testBrand(brand, sales_data) {
+				var myChart = echarts.init(document.getElementById("mainBrand"))
+				  // 指定图表的配置项和数据
+		        var option = {
+		        	color: ['#c23531'],
+		            title: {
+		                text: '年度汽车品牌成交量Top10'
+		            },
+		            tooltip: {},
+		            legend: {
+		                data:['销量']
+		            },
+		            xAxis: [{
+		            	boundaryGap: false, //设置x轴是否留间隙，默认（true）留间隙
+		            	data: brand,
+		           		axisLabel:{
+		           			rotate:45,
+		           			//设置成 0 强制显示所有标签。
+		           			interval: 0
+		           			
+		           		}
+		            }],
+		            yAxis: {},
+		            series: [{
+		                name: '成交量',
+		                type: 'line',
+		                smooth: true,  //设置为曲线
+		                data: sales_data
+		            }]
+		        };
+		        // 使用刚指定的配置项和数据显示图表。
+		        myChart.setOption(option);
+	        }
+			function testType(car_type, sales_data) {
+				var myChart = echarts.init(document.getElementById("mainType"))
+				// 指定图表的配置项和数据
+		        var option = {
+		            title: {
+		                text: '年度汽车类型成交量Top10'
+		            },
+		            tooltip: {},
+		            legend: {
+		                data:['销量']
+		            },
+		            xAxis: [{
+		            	data: car_type,
+		           		axisLabel:{
+		           			rotate:45,
+		           			//设置成 0 强制显示所有标签。
+		           			interval: 0
+		           		}
+		            }],
+		            yAxis: {},
+		            series: [{
+		                name: '成交量',
+		                type: 'bar',
+		                data: sales_data
+		            }]
+		        };
+		        // 使用刚指定的配置项和数据显示图表。
+		        myChart.setOption(option);
+	        }
+		</script>
+	</body>
+</html>

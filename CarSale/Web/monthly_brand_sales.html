@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>月品牌销量</title>
+		<script src="js/echarts.min.js"></script>
+		<script src="js/jquery.js"></script>
+		<link rel="stylesheet" href="css/screen.css" />
+		<style type="text/css">
+			* {
+				margin: 0px;
+				padding: 0px;
+			}	
+			#main {
+				height: 400px;
+				width: 90%;
+				position: absolute;
+				left: 5%;
+				top: 100px;
+			}
+			.menu {
+				width: 100%;
+				height: 80px;
+				position: absolute;
+			}	
+		</style>
+	</head>
+	<body onload="getBrandData()">
+		<div class="menu">
+			<select class="selectSizeYear">
+				<option value="2015">2015</option>
+				<option value="2016">2016</option>
+				<option value="2017">2017</option>
+				<option value="2018">2018</option>
+				<option value="2019">2019</option>
+				<option value="2020" selected="selected">2020</option>
+				<option value="2021">2021</option>
+			</select>
+			<select class="selectSizeMonth">
+				<option value="01">01</option>
+				<option value="02">02</option>
+				<option value="03">03</option>
+				<option value="04">04</option>
+				<option value="05">05</option>
+				<option value="06">06</option>
+				<option value="07">07</option>
+				<option value="08" selected="selected">08</option>
+				<option value="09">09</option>
+				<option value="10">10</option>
+				<option value="11">11</option>
+				<option value="12">12</option>
+			</select>
+			<input class="buttonSize" type="button" value="查询" onclick="getBrandData()"/>
+		</div>
+		<div id="main"></div>
+		<script>	
+			// 获取品牌数据
+			function getBrandData() {		
+				//获取选择时间
+				var year = $(".selectSizeYear")[0];
+				var y = year.options[year.selectedIndex].value;	
+				var month = $(".selectSizeMonth")[0];
+				var m = month.options[month.selectedIndex].value;	
+				var ym = y +"-"+ m;	
+				$.ajax({
+					type:"POST",
+					url:"MonthlyBrandServlet",
+					data:{
+						year: y,
+						month: m
+					},
+					success:function(data) {	
+						var brand = new Array();
+						var sales_data = new Array();
+						
+						var jsData = JSON.parse(data);
+						for(var i=0; i<jsData.length; i++) {
+							brand[i] = jsData[i].brand;
+							sales_data[i] = jsData[i].sales_data;
+						}	
+						test(brand, sales_data, ym);
+					}
+				});
+			}
+			// 展示品牌数据
+			function test(brand, sales_data, ym) {	
+				var myChart = echarts.init(document.getElementById("main"))
+				  // 指定图表的配置项和数据
+		        var option = {
+		            title: {
+		                text: '月度汽车品牌成交量Top10'
+		            },
+		            tooltip: {},
+		            legend: {
+		                data:['销量']
+		            },
+		            xAxis: {
+		            	data: brand,
+		            	boundaryGap: true, //设置x轴是否留间隙，默认（true）留间隙
+				        axisLabel:{
+		           			rotate:0,
+		           			//设置成 0 强制显示所有标签。
+		           			interval: 0
+		           		}
+		            },
+		            yAxis: {},
+		            series: [{
+		                name: '成交量',
+		                type: 'bar',
+		                data: sales_data
+		            }]
+		        };
+		        // 使用刚指定的配置项和数据显示图表。
+		        myChart.setOption(option);  
+		        //钻取的数据 
+		        myChart.on("click", function(carType) {
+		        	
+		        	//品牌名
+		        	var brand = carType.name;
+		        	//月时间
+		        	var month = ym;
+		        	getTypeData(brand, month);
+		        })
+	        }
+			// 获取指定品牌的汽车类型数据
+			function getTypeData(b, m) {
+				
+				$.ajax({
+					type:"POST",
+					url:"MonthSalesDetailsServlet",
+					data:{
+						brand: b,
+						month: m
+					},
+					success:function(data) {
+						var carType = new Array();
+						var sales_data = new Array();
+						var jsData = JSON.parse(data);
+						for(var i=0; i<jsData.length; i++) {
+							carType[i] = jsData[i].car_type;
+							sales_data[i] = jsData[i].sales_data;
+						}
+						typeDataShow(carType, sales_data, b);
+					}
+				});
+			}
+			//数据类型展示
+			function typeDataShow(carType, sales_data, brand) {
+				// 基于准备好的dom，初始化echarts实例
+				var myChart2 = echarts.init(document.getElementById('main'));
+				// 指定图表的配置项和数据
+				var option2 = {
+				    title: {
+				        text: brand +"品牌汽车类型销售详细"
+				    },
+				    tooltip: {},
+				    legend: {
+				        data:['销量']
+				    },
+				    xAxis: {
+				    	boundaryGap: false, //设置x轴是否留间隙，默认（true）留间隙
+				        data: carType,
+				        axisLabel:{
+		           			rotate:45,
+		           			//设置成 0 强制显示所有标签。
+		           			interval: 0
+		           		}      
+				    },
+				    yAxis: {},
+				    series: [{
+				        name: '销量',
+				        type: 'line',
+				        data: sales_data,
+				        smooth: true,  //设置为曲线
+				    }]
+				};	
+				// 使用刚指定的配置项和数据显示图表。
+		        myChart2.setOption(option2);
+			}
+		</script>
+	</body>
+</html>

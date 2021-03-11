@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>国籍占比</title>
+		<script src="js/echarts.min.js"></script>
+		<script src="js/jquery.js"></script>
+		<link rel="stylesheet" href="css/screen.css" />
+		<style type="text/css">
+			* {
+				margin: 0px;
+				padding: 0px;
+			}
+			#main {
+				height: 400px;
+				width: 90%;
+				position: absolute;
+				left: 5%;
+				top: 100px;
+			}
+			.menu {
+				width: 100%;
+				height: 80px;
+				position: absolute;
+				/*background-color: darkgoldenrod;*/
+			}
+		</style>
+	</head>
+	<body onload="getData()">
+		<div class="menu">
+			<select class="selectSizeYear">
+				<option value="2015">2015</option>
+				<option value="2016">2016</option>
+				<option value="2017">2017</option>
+				<option value="2018">2018</option>
+				<option value="2019">2019</option>
+				<option value="2020" selected="selected">2020</option>
+				<option value="2021">2021</option>
+			</select>		
+			<select class="selectSizeMonth">
+				<option value="01">01</option>
+				<option value="02">02</option>
+				<option value="03">03</option>
+				<option value="04">04</option>
+				<option value="05">05</option>
+				<option value="06">06</option>
+				<option value="07">07</option>
+				<option value="08" selected="selected">08</option>
+				<option value="09">09</option>
+				<option value="10">10</option>
+				<option value="11">11</option>
+				<option value="12">12</option>
+			</select>
+			<input class="buttonSize" type="button" value="查询" onclick="getData()" />
+		</div>
+		<div id="main"></div>	
+		<script>		
+			function getData() {			
+				//获取选择时间
+				var year = $(".selectSizeYear")[0];
+				var y = year.options[year.selectedIndex].value;			
+				var month = $(".selectSizeMonth")[0];
+				var m = month.options[month.selectedIndex].value;			
+				$.ajax({
+					type:"POST",
+					url:"NationalityRatioServlet",
+					data:{
+						year: y,
+						month: m
+					},
+					success:function(data) {					
+						var nationalityData = new Array();
+						var titleData = new Array();
+						var jsData = JSON.parse(data);
+						for(var i=0; i<jsData.length; i++) {
+							var nationality = jsData[i].nationality;
+							var proportion = jsData[i].proportion;
+							//显示数据
+							nationalityData[i] = {value: proportion, name: nationality};						
+							//标签数据
+							titleData[i] = jsData[i].nationality;
+						}				
+						test(nationalityData, titleData);
+					}
+				});
+			}	
+			function test(nationalityData, titleData) {		
+				var myChart = echarts.init(document.getElementById("main"))
+				var option = {
+				    title: {
+				        text: '汽车品牌所在国籍销量占比',
+				        left: 'center'
+				    },
+				    tooltip: {
+				        trigger: 'item',
+				        formatter: '{a} <br/>{b} : {c} ({d}%)'
+				    },
+				    legend: {
+				        orient: 'vertical',
+				        left: 'left',
+				        data: titleData
+				    },
+				    series: [
+				        {
+				            name: '访问来源',
+				            type: 'pie',
+				            radius: '55%',
+				            center: ['50%', '60%'],
+				            data: nationalityData,
+				            emphasis: {
+				                itemStyle: {
+				                    shadowBlur: 10,
+				                    shadowOffsetX: 0,
+				                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+				                }
+				            }
+				        }
+				    ]
+				};			
+				// 使用刚指定的配置项和数据显示图表。
+		        myChart.setOption(option);
+		   }
+		</script>
+	</body>
+</html>
