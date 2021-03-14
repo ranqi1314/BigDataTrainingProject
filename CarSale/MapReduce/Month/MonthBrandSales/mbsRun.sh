@@ -7,5 +7,5 @@ $HADOOP_CMD fs -rm -r $OUTPUT_PATH
 $HADOOP_CMD jar $STREAM_JAR_PATH \
 -input "/input/CarSales.txt" \
 -output $OUTPUT_PATH \
--mapper "/usr/bin/python3 MonthBrandSales.py" \
+-mapper "python3 MonthBrandSales.py" \
 -file "/BigDataTrainingProject/CarSale/Month/MonthBrandSales/MonthBrandSales.py"
